@@ -103,38 +103,38 @@
   /* ==========================
    * Radius scale (Design System)
    * ========================== */
-  --radius-none: 0rem;        /* 0px  */
-  --radius-xxs: 0.125rem;     /* 2px  */
-  --radius-xs: 0.25rem;       /* 4px  */
-  --radius-sm: 0.375rem;      /* 6px  */
-  --radius-md: 0.5rem;        /* 8px  */
-  --radius-lg: 0.625rem;      /* 10px */
-  --radius-xl: 0.75rem;       /* 12px */
-  --radius-2xl: 1rem;         /* 16px */
-  --radius-3xl: 1.25rem;      /* 20px */
-  --radius-4xl: 1.5rem;       /* 24px */
-  --radius-full: 9999px;      /* pill / full */
+  --radius-none: 0rem; /* 0px  */
+  --radius-xxs: 0.125rem; /* 2px  */
+  --radius-xs: 0.25rem; /* 4px  */
+  --radius-sm: 0.375rem; /* 6px  */
+  --radius-md: 0.5rem; /* 8px  */
+  --radius-lg: 0.625rem; /* 10px */
+  --radius-xl: 0.75rem; /* 12px */
+  --radius-2xl: 1rem; /* 16px */
+  --radius-3xl: 1.25rem; /* 20px */
+  --radius-4xl: 1.5rem; /* 24px */
+  --radius-full: 9999px; /* pill / full */
 
-    /* ==========================
+  /* ==========================
    * Spacing scale (Design System)
    * ========================== */
-  --spacing-0: 0rem;          /* 0px  – alias spacing-none */
-  --spacing-xxs: 0.125rem;    /* 2px  */
-  --spacing-xs: 0.25rem;      /* 4px  */
-  --spacing-sm: 0.375rem;     /* 6px  */
-  --spacing-md: 0.5rem;       /* 8px  */
-  --spacing-lg: 0.75rem;      /* 12px */
-  --spacing-xl: 1rem;         /* 16px */
-  --spacing-2xl: 1.25rem;     /* 20px */
-  --spacing-3xl: 1.5rem;      /* 24px */
-  --spacing-4xl: 2rem;        /* 32px */
-  --spacing-5xl: 2.5rem;      /* 40px */
-  --spacing-6xl: 3rem;        /* 48px */
-  --spacing-7xl: 4rem;        /* 64px */
-  --spacing-8xl: 5rem;        /* 80px */
-  --spacing-9xl: 6rem;        /* 96px */
-  --spacing-10xl: 8rem;       /* 128px */
-  --spacing-11xl: 8.75rem;    /* 140px */
+  --spacing-0: 0rem; /* 0px  – alias spacing-none */
+  --spacing-xxs: 0.125rem; /* 2px  */
+  --spacing-xs: 0.25rem; /* 4px  */
+  --spacing-sm: 0.375rem; /* 6px  */
+  --spacing-md: 0.5rem; /* 8px  */
+  --spacing-lg: 0.75rem; /* 12px */
+  --spacing-xl: 1rem; /* 16px */
+  --spacing-2xl: 1.25rem; /* 20px */
+  --spacing-3xl: 1.5rem; /* 24px */
+  --spacing-4xl: 2rem; /* 32px */
+  --spacing-5xl: 2.5rem; /* 40px */
+  --spacing-6xl: 3rem; /* 48px */
+  --spacing-7xl: 4rem; /* 64px */
+  --spacing-8xl: 5rem; /* 80px */
+  --spacing-9xl: 6rem; /* 96px */
+  --spacing-10xl: 8rem; /* 128px */
+  --spacing-11xl: 8.75rem; /* 140px */
 }
 
 /* =========================================

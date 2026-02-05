@@ -3,13 +3,11 @@
 import dayjs from 'dayjs';
 import { X } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
-import { useAuth } from '@/components/providers/auth-provider';
+// Import Shared Components
 import ArticleCard from '@/components/reusables/article-card';
-import { UserAvatarMenu } from '@/components/reusables/user-avatar-menu';
 import {
   Dialog,
   DialogContent,
@@ -18,17 +16,18 @@ import {
   DialogTitle,
   DialogHeader,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 
 import { usePostDetailQuery } from '@/features/posts/queries';
 import { stripHtmlTags } from '@/lib/text';
+import { Footer } from '@/shared/components/footer';
+import { Header } from '@/shared/components/header';
 
 export default function ArticleDetailPage() {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user } = useAuth();
+  const router = useRouter();
 
-  const toggleMobileMenu = () => setIsMobileMenuOpen((prev) => !prev);
+  // State untuk search bar di Header
+  const [searchValue, setSearchValue] = useState('');
 
   // Ambil id dari query string: /detail?id=123
   const searchParams = useSearchParams();
@@ -36,6 +35,20 @@ export default function ArticleDetailPage() {
   const postId = idParam ? Number(idParam) : undefined;
 
   const { data: post, isLoading, isError } = usePostDetailQuery(postId);
+
+  // --- Logic Search Header ---
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      // Redirect ke homepage dengan query search
+      router.push(`/?search=${encodeURIComponent(searchValue)}`);
+    }
+  };
+
+  const handleLogoClick = () => {
+    // Reset search value saat kembali ke home via logo
+    setSearchValue('');
+  };
+  // ---------------------------
 
   const title =
     post?.title ?? '5 Reasons to Learn Frontend Development in 2025';
@@ -61,131 +74,17 @@ export default function ArticleDetailPage() {
     : `Frontend development is more than just building beautiful user interfaces — it's about crafting user experiences that are fast, accessible, and intuitive. As we move into 2025, the demand for skilled frontend developers continues to rise.`;
 
   return (
-    <div className='relative min-h-screen'>
-      {/* Header */}
-      <header className='sticky top-0 right-0 left-0 z-30 flex h-16 items-center justify-between gap-4 border-b border-b-neutral-300 bg-white px-4 md:px-30'>
-        {/* Logo */}
-        <div className='relative h-6 w-26.5 md:h-9 md:w-39.5'>
-          <Image
-            src='/icons/logo-header.svg'
-            alt='Header logo'
-            fill
-            sizes='(min-width: 768px) 140px, 106px'
-            className='object-contain'
-            priority
-          />
-        </div>
-
-        {/* Desktop search bar */}
-        <div className='hidden flex-1 justify-center md:flex'>
-          <Input
-            placeholder='Search'
-            className='h-12 max-w-93.25 border-neutral-300 px-4 text-sm'
-          />
-        </div>
-
-        {/* Desktop user actions */}
-        <div className='hidden items-center gap-6 md:flex'>
-          {user ? (
-            <>
-              <button
-                type='button'
-                className='text-primary-300 hover:text-primary-300 flex items-center gap-2 text-sm'
-              >
-                <Image
-                  src='/icons/write-post-icon.svg'
-                  alt='Write post'
-                  width={24}
-                  height={24}
-                />
-                <span>Write Post</span>
-              </button>
-              <div className='h-5.75 w-px bg-neutral-300' />
-              <UserAvatarMenu showName />
-            </>
-          ) : (
-            <>
-              <Link
-                href='/login'
-                className='hover:text-primary-300 text-sm text-neutral-900'
-              >
-                Login
-              </Link>
-              <div className='h-5.75 w-px bg-neutral-300' />
-              <Link
-                href='/register'
-                className='bg-primary-300 flex h-11 items-center justify-center rounded-full p-2 px-16 text-sm font-semibold text-white hover:bg-[#0082c4]'
-              >
-                Register
-              </Link>
-            </>
-          )}
-        </div>
-
-        {/* Mobile actions */}
-        <div className='flex gap-6 md:hidden'>
-          {user ? (
-            <UserAvatarMenu />
-          ) : (
-            <>
-              {!isMobileMenuOpen && (
-                <button type='button' aria-label='Search' className='p-1'>
-                  <Image
-                    src='/icons/search-mobile.svg'
-                    alt='Search'
-                    width={24}
-                    height={24}
-                  />
-                </button>
-              )}
-
-              <button
-                type='button'
-                onClick={toggleMobileMenu}
-                aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-                className='p-1'
-              >
-                <Image
-                  src={
-                    isMobileMenuOpen
-                      ? '/icons/menu-mobile-close-button.svg'
-                      : '/icons/menu-mobile.svg'
-                  }
-                  alt=''
-                  width={24}
-                  height={24}
-                />
-              </button>
-            </>
-          )}
-        </div>
-      </header>
-
-      {/* Mobile full-screen menu hanya jika BELUM login */}
-      {!user && isMobileMenuOpen && (
-        <div className='fixed inset-x-0 top-16 bottom-0 z-20 bg-white md:hidden'>
-          <div className='flex flex-col items-center gap-6 px-4 pt-10'>
-            <Link
-              href='/login'
-              className='text-primary-300 font-semibold underline underline-offset-3'
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Login
-            </Link>
-
-            <Link
-              href='/register'
-              className='bg-primary-300 w-full max-w-53.5 rounded-full py-3 text-center font-semibold text-white hover:bg-[#0082c4]'
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              Register
-            </Link>
-          </div>
-        </div>
-      )}
+    <div className='relative flex min-h-screen flex-col'>
+      {/* Reusable Header */}
+      <Header
+        searchValue={searchValue}
+        onSearchChange={setSearchValue}
+        onSearchKeyDown={handleSearchKeyDown}
+        onLogoClick={handleLogoClick}
+      />
 
       {/* Konten utama */}
-      <main className='md:px-80'>
+      <main className='flex-1 md:px-80'>
         <div className='flex flex-col gap-3 px-4 py-6 pb-10 md:gap-4 md:px-0 md:py-12 md:pb-55.75'>
           {/* status loading / error sederhana */}
           {isLoading && !post && (
@@ -288,7 +187,7 @@ export default function ArticleDetailPage() {
               Comments(5)
             </h2>
 
-            {/* Current user */}
+            {/* Current user (Static for now, can be connected to auth later) */}
             <div className='flex items-center gap-3'>
               <div className='relative h-10 w-10'>
                 <Image
@@ -663,9 +562,8 @@ export default function ArticleDetailPage() {
         </div>
       </main>
 
-      <footer className='flex h-15 items-center justify-center border-t border-t-neutral-300 text-xs text-neutral-600'>
-        <div>© 2025 Web Programming Hack Blog All rights reserved.</div>
-      </footer>
+      {/* Reusable Footer */}
+      <Footer />
     </div>
   );
 }

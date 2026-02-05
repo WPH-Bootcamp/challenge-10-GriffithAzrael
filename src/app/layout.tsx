@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang='en'>
-      <body className={clsx(inter.variable, 'antialiased')}>
+      <body className={clsx(inter.variable, 'min-h-screen antialiased')}>
         <ReactQueryProvider>
           <AuthProvider>{children}</AuthProvider>
           <Toaster />

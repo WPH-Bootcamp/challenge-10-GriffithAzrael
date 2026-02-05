@@ -4,7 +4,13 @@ import { useQuery, keepPreviousData } from '@tanstack/react-query';
 
 import type { PaginatedPostsResponse, Post } from '@/types/post';
 
-import { getMostLikedPosts, getPostById, getRecommendedPosts } from './api';
+import {
+  getMostLikedPosts,
+  getPostById,
+  getRecommendedPosts,
+  getSearchPosts, // Import fungsi baru
+  SearchParams, // Import type baru
+} from './api';
 
 export type ListParams = {
   limit?: number;
@@ -17,7 +23,10 @@ export const postsKeys = {
     [...postsKeys.all, 'recommended', params] as const,
   mostLiked: (params: ListParams) =>
     [...postsKeys.all, 'most-liked', params] as const,
-  post: (id: number | string) => [...postsKeys.all, 'detail', id] as const, // <-- key untuk detail
+  post: (id: number | string) => [...postsKeys.all, 'detail', id] as const,
+  // Key baru untuk search
+  search: (params: SearchParams) =>
+    [...postsKeys.all, 'search', params] as const,
 };
 
 export function useRecommendedPostsQuery(params: ListParams) {
@@ -36,11 +45,22 @@ export function useMostLikedPostsQuery(params: ListParams) {
   });
 }
 
-// QUERY DETAIL POST
+export function useSearchPostsQuery(
+  params: SearchParams,
+  enabled: boolean = true
+) {
+  return useQuery<PaginatedPostsResponse, Error>({
+    queryKey: postsKeys.search(params),
+    queryFn: () => getSearchPosts(params),
+    placeholderData: keepPreviousData,
+    enabled: enabled, // Agar query tidak jalan otomatis kalau query string kosong
+  });
+}
+
 export function usePostDetailQuery(id?: number) {
   return useQuery<Post, Error>({
     queryKey: postsKeys.post(id ?? 'pending'),
-    queryFn: () => getPostById(id!), // aman karena disabled jika id undefined
+    queryFn: () => getPostById(id!),
     enabled: id != null,
   });
 }

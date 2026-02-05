@@ -25,24 +25,32 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  // Nilai awal SELALU null, baik di server maupun client
   const [user, setUser] = useState<AuthUser | null>(null);
 
-  // Load dari localStorage saat mount
+  // Load dari localStorage setelah komponen ter‑mount di client
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
     const stored = window.localStorage.getItem('auth');
-    if (stored) {
-      try {
-        setUser(JSON.parse(stored));
-      } catch {
-        window.localStorage.removeItem('auth');
-      }
+    if (!stored) return;
+
+    try {
+      const parsed = JSON.parse(stored) as AuthUser;
+
+      // Jadikan update state async supaya tidak melanggar aturan React 19
+      setTimeout(() => {
+        setUser(parsed);
+      }, 0);
+    } catch {
+      window.localStorage.removeItem('auth');
     }
   }, []);
 
   // Simpan ke localStorage tiap kali user berubah
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
     if (user) {
       window.localStorage.setItem('auth', JSON.stringify(user));
     } else {
@@ -51,7 +59,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const login = (data: AuthUser) => setUser(data);
-
   const logout = () => setUser(null);
 
   return (

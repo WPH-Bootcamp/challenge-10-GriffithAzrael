@@ -1,9 +1,16 @@
 'use client';
 
-import { Fragment, useState } from 'react';
 import dayjs from 'dayjs';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Fragment, useState } from 'react';
+
+import { useAuth } from '@/components/providers/auth-provider';
+import ArticleCard from '@/components/reusables/article-card';
+import MostLikedCard from '@/components/reusables/most-liked-card';
+import { UserAvatarMenu } from '@/components/reusables/user-avatar-menu';
+import { Input } from '@/components/ui/input';
 import {
   Pagination,
   PaginationContent,
@@ -12,12 +19,7 @@ import {
   PaginationLink,
 } from '@/components/ui/pagination';
 import { Separator } from '@/components/ui/separator';
-import { Input } from '@/components/ui/input';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import ArticleCard from '@/components/reusables/article-card';
-import MostLikedCard from '@/components/reusables/most-liked-card';
-import { UserAvatarMenu } from '@/components/reusables/user-avatar-menu';
-import { useAuth } from '@/components/providers/auth-provider';
+
 import {
   useMostLikedPostsQuery,
   useRecommendedPostsQuery,

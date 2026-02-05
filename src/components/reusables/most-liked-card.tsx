@@ -25,7 +25,7 @@ export default function MostLikedCard({
       </p>
 
       {/* Deskripsi singkat */}
-      <p className='text-xs text-neutral-700 line-clamp-2 md:text-sm'>
+      <p className='line-clamp-2 text-xs text-neutral-700 md:text-sm'>
         {description}
       </p>
 

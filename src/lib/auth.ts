@@ -30,7 +30,7 @@ export type LoginResponse = {
  * POST /auth/register
  */
 export async function registerUser(
-  payload: RegisterDto,
+  payload: RegisterDto
 ): Promise<RegisterResponse> {
   return fetchAPI<RegisterResponse>('/auth/register', {
     method: 'POST',

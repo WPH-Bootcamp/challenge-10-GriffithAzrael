@@ -42,7 +42,7 @@ export function getRecommendedPosts(params: ListParams = {}) {
   searchParams.set('page', String(page));
 
   return fetchJson<PaginatedPostsResponse>(
-    `/api/posts/recommended?${searchParams.toString()}`,
+    `/api/posts/recommended?${searchParams.toString()}`
   );
 }
 
@@ -55,7 +55,7 @@ export function getMostLikedPosts(params: ListParams = {}) {
   searchParams.set('page', String(page));
 
   return fetchJson<PaginatedPostsResponse>(
-    `/api/posts/most-liked?${searchParams.toString()}`,
+    `/api/posts/most-liked?${searchParams.toString()}`
   );
 }
 
@@ -64,7 +64,7 @@ export function getPostById(id: number | string) {
 
   if (!base) {
     throw new Error(
-      'NEXT_PUBLIC_API_BASE_URL is not set. Please configure it in .env/.env.local',
+      'NEXT_PUBLIC_API_BASE_URL is not set. Please configure it in .env/.env.local'
     );
   }
 

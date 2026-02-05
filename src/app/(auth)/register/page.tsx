@@ -1,16 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import type { SubmitEventHandler } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import type { SubmitEventHandler } from 'react';
 import { toast } from 'sonner';
 
-import { Field, FieldTitle, FieldLabel } from '@/components/ui/field';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { useRegisterMutation, useLoginMutation } from '@/features/auth/hooks';
 import { useAuth } from '@/components/providers/auth-provider';
+import { Button } from '@/components/ui/button';
+import { Field, FieldTitle, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+
+import { useRegisterMutation, useLoginMutation } from '@/features/auth/hooks';
 
 type RegisterFormState = {
   name: string;

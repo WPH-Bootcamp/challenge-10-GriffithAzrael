@@ -1,17 +1,15 @@
 'use client';
 
-import { useState } from 'react';
 import dayjs from 'dayjs';
+import { X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Input } from '@/components/ui/input';
-import { Separator } from '@/components/ui/separator';
-import { UserAvatarMenu } from '@/components/reusables/user-avatar-menu';
-import ArticleCard from '@/components/reusables/article-card';
+import { useState } from 'react';
+
 import { useAuth } from '@/components/providers/auth-provider';
-import { usePostDetailQuery } from '@/features/posts/queries';
-import { stripHtmlTags } from '@/lib/text';
+import ArticleCard from '@/components/reusables/article-card';
+import { UserAvatarMenu } from '@/components/reusables/user-avatar-menu';
 import {
   Dialog,
   DialogContent,
@@ -20,7 +18,11 @@ import {
   DialogTitle,
   DialogHeader,
 } from '@/components/ui/dialog';
-import { X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Separator } from '@/components/ui/separator';
+
+import { usePostDetailQuery } from '@/features/posts/queries';
+import { stripHtmlTags } from '@/lib/text';
 
 export default function ArticleDetailPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -427,7 +429,10 @@ export default function ArticleDetailPage() {
                 </button>
               </DialogTrigger>
 
-              <DialogContent showCloseButton={false} className='flex w-full max-w-86.25 flex-col gap-5 rounded-2xl bg-white p-4 md:max-w-153.25 md:p-6'>
+              <DialogContent
+                showCloseButton={false}
+                className='flex w-full max-w-86.25 flex-col gap-5 rounded-2xl bg-white p-4 md:max-w-153.25 md:p-6'
+              >
                 {/* HEADER DIALOG – statis */}
                 <DialogHeader className='flex flex-row items-center justify-between space-y-0'>
                   <DialogTitle asChild>
@@ -448,7 +453,7 @@ export default function ArticleDetailPage() {
                 </DialogHeader>
 
                 {/* AREA SCROLLABLE: input + list komentar */}
-                <div className='-mx-4 max-h-[calc(100vh-194px)] space-y-2 overflow-y-auto px-4 md:-mx-6 md:max-h-[calc(100vh-122px)] md:px-6 no-scrollbar'>
+                <div className='no-scrollbar -mx-4 max-h-[calc(100vh-194px)] space-y-2 overflow-y-auto px-4 md:-mx-6 md:max-h-[calc(100vh-122px)] md:px-6'>
                   {/* Comment input di dialog */}
                   <div className='space-y-2'>
                     <p className='text-sm font-semibold text-neutral-950'>

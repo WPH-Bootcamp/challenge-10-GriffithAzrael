@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
         message:
           'BACKEND_API_BASE_URL is not configured on the server. Please set it in .env/.env.local.',
       },
-      { status: 500 },
+      { status: 500 }
     );
   }
 
@@ -31,15 +31,14 @@ export async function GET(req: NextRequest) {
     return new NextResponse(text, {
       status: res.status,
       headers: {
-        'Content-Type':
-          res.headers.get('content-type') ?? 'application/json',
+        'Content-Type': res.headers.get('content-type') ?? 'application/json',
       },
     });
   } catch (error) {
     console.error('Error proxying /posts/recommended:', error);
     return NextResponse.json(
       { message: 'Failed to fetch recommended posts from backend.' },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

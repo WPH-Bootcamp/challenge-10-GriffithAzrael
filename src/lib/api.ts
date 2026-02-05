@@ -10,7 +10,7 @@ export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 if (!API_BASE_URL) {
   // Supaya kelihatan kalau env belum di-set
-  // eslint-disable-next-line no-console
+
   console.warn('NEXT_PUBLIC_API_URL is not defined');
 }
 
@@ -34,7 +34,7 @@ export const api = axios.create({
  */
 export async function fetchAPI<T>(
   endpoint: string,
-  config?: AxiosRequestConfig,
+  config?: AxiosRequestConfig
 ): Promise<T> {
   try {
     const response = await api.request<T>({

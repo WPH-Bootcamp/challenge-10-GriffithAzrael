@@ -1,7 +1,7 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 import { useAuth } from '@/components/providers/auth-provider';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';

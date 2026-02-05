@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, type UseMutationOptions } from '@tanstack/react-query';
+
 import {
   registerUser,
   loginUser,
@@ -11,7 +12,7 @@ import {
 } from '@/lib/auth';
 
 export function useRegisterMutation(
-  options?: UseMutationOptions<RegisterResponse, Error, RegisterDto>,
+  options?: UseMutationOptions<RegisterResponse, Error, RegisterDto>
 ) {
   return useMutation<RegisterResponse, Error, RegisterDto>({
     mutationKey: ['auth', 'register'],
@@ -21,7 +22,7 @@ export function useRegisterMutation(
 }
 
 export function useLoginMutation(
-  options?: UseMutationOptions<LoginResponse, Error, LoginDto>,
+  options?: UseMutationOptions<LoginResponse, Error, LoginDto>
 ) {
   return useMutation<LoginResponse, Error, LoginDto>({
     mutationKey: ['auth', 'login'],

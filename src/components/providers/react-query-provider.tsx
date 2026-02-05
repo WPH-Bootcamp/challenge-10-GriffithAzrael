@@ -14,8 +14,10 @@ export function ReactQueryProvider({ children }: PropsWithChildren) {
             staleTime: 1000 * 60, // 1 menit
           },
         },
-      }),
+      })
   );
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  );
 }

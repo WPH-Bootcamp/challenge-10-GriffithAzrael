@@ -29,7 +29,7 @@ export default function ArticleCard({
     <div className={`flex flex-col gap-3 ${className}`}>
       {/* Article text */}
       <div className='flex flex-col gap-2'>
-        <p className='font-bold text-md md:text-xl'>{title}</p>
+        <p className='text-md font-bold md:text-xl'>{title}</p>
 
         {/* Article tags */}
         <div className='flex flex-wrap gap-2'>

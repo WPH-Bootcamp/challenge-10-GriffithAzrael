@@ -1,9 +1,10 @@
 import clsx from 'clsx';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+
 import './globals.css';
-import { ReactQueryProvider } from '@/components/providers/react-query-provider';
 import { AuthProvider } from '@/components/providers/auth-provider';
+import { ReactQueryProvider } from '@/components/providers/react-query-provider';
 import { Toaster } from '@/components/ui/sonner';
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang='en'>
       <body className={clsx(inter.variable, 'antialiased')}>
         <ReactQueryProvider>
           <AuthProvider>{children}</AuthProvider>

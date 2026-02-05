@@ -1,7 +1,9 @@
 'use client';
 
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
+
 import type { PaginatedPostsResponse, Post } from '@/types/post';
+
 import { getMostLikedPosts, getPostById, getRecommendedPosts } from './api';
 
 export type ListParams = {
@@ -15,8 +17,7 @@ export const postsKeys = {
     [...postsKeys.all, 'recommended', params] as const,
   mostLiked: (params: ListParams) =>
     [...postsKeys.all, 'most-liked', params] as const,
-  post: (id: number | string) =>
-    [...postsKeys.all, 'detail', id] as const, // <-- key untuk detail
+  post: (id: number | string) => [...postsKeys.all, 'detail', id] as const, // <-- key untuk detail
 };
 
 export function useRecommendedPostsQuery(params: ListParams) {

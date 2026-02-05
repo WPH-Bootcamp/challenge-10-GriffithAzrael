@@ -2,14 +2,15 @@
 
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 
-import type { PaginatedPostsResponse, Post } from '@/types/post';
+import type { PaginatedPostsResponse, Post, Comment } from '@/types/post';
 
 import {
   getMostLikedPosts,
   getPostById,
   getRecommendedPosts,
-  getSearchPosts, // Import fungsi baru
-  SearchParams, // Import type baru
+  getPostComments,
+  getSearchPosts,
+  SearchParams,
 } from './api';
 
 export type ListParams = {
@@ -27,6 +28,9 @@ export const postsKeys = {
   // Key baru untuk search
   search: (params: SearchParams) =>
     [...postsKeys.all, 'search', params] as const,
+  // Key baru untuk comments
+  comments: (id: number | string) =>
+    [...postsKeys.all, 'comments', id] as const,
 };
 
 export function useRecommendedPostsQuery(params: ListParams) {
@@ -61,6 +65,15 @@ export function usePostDetailQuery(id?: number) {
   return useQuery<Post, Error>({
     queryKey: postsKeys.post(id ?? 'pending'),
     queryFn: () => getPostById(id!),
+    enabled: id != null,
+  });
+}
+
+// Hook Baru: Get Comments
+export function usePostCommentsQuery(id?: number) {
+  return useQuery<Comment[], Error>({
+    queryKey: postsKeys.comments(id ?? 'pending'),
+    queryFn: () => getPostComments(id!),
     enabled: id != null,
   });
 }

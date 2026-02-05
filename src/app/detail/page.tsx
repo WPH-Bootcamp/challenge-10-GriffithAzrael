@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import { X } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 // Import Shared Components
 import ArticleCard from '@/components/reusables/article-card';
@@ -18,60 +18,81 @@ import {
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 
-import { usePostDetailQuery } from '@/features/posts/queries';
+// Features Imports
+import { useAuthUserQuery } from '@/features/auth/queries';
+import {
+  usePostDetailQuery,
+  usePostCommentsQuery,
+} from '@/features/posts/queries';
 import { stripHtmlTags } from '@/lib/text';
 import { Footer } from '@/shared/components/footer';
 import { Header } from '@/shared/components/header';
 
 export default function ArticleDetailPage() {
   const router = useRouter();
-
-  // State untuk search bar di Header
   const [searchValue, setSearchValue] = useState('');
 
-  // Ambil id dari query string: /detail?id=123
+  // 1. Ambil ID dari URL
   const searchParams = useSearchParams();
   const idParam = searchParams.get('id');
   const postId = idParam ? Number(idParam) : undefined;
 
+  // 2. Fetch Data
   const { data: post, isLoading, isError } = usePostDetailQuery(postId);
 
-  // --- Logic Search Header ---
+  const { data: user } = useAuthUserQuery();
+  const { data: commentsData } = usePostCommentsQuery(postId);
+
+  // 3. Logic "Another Post" (Simulasi mengambil post lain, misal id+1)
+  // Jika postId ada, kita coba ambil postId + 1, jika tidak default ke 1
+  const anotherPostId = postId ? postId + 1 : 1;
+  const { data: anotherPost } = usePostDetailQuery(anotherPostId);
+
+  // --- Search Logic ---
   const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      // Redirect ke homepage dengan query search
       router.push(`/?search=${encodeURIComponent(searchValue)}`);
     }
   };
 
   const handleLogoClick = () => {
-    // Reset search value saat kembali ke home via logo
     setSearchValue('');
   };
-  // ---------------------------
+  // --------------------
 
-  const title =
-    post?.title ?? '5 Reasons to Learn Frontend Development in 2025';
-
+  // --- Data Mapping: Post Utama ---
+  const title = post?.title ?? 'Loading Title...';
   const tags =
     post?.tags && post.tags.length > 0
       ? post.tags
-      : ['Programming', 'Frontend', 'Coding'];
+      : ['Programming', 'Frontend', 'Coding']; // Default fallback
 
-  const authorName = post?.author?.name ?? 'John Doe';
-
+  const authorName = post?.author?.name ?? 'Unknown Author';
+  const authorAvatar = post?.author?.avatarUrl || '/images/default-profile.png';
   const createdAtText = post
     ? dayjs(post.createdAt).format('DD MMM YYYY')
-    : '27 May 2025';
+    : '-';
+  const likes = post?.likes ?? 0;
 
-  const likes = post?.likes ?? 20;
-  const comments = post?.comments ?? 20;
+  // Total komentar: Prioritas dari detail post (jumlah), fallback ke panjang array comments
+  const commentsCount = post?.comments ?? commentsData?.length ?? 0;
 
   const imageSrc = post?.imageUrl || '/images/article-image.png';
 
-  const contentText = post
-    ? stripHtmlTags(post.content)
-    : `Frontend development is more than just building beautiful user interfaces — it's about crafting user experiences that are fast, accessible, and intuitive. As we move into 2025, the demand for skilled frontend developers continues to rise.`;
+  const contentText = post ? stripHtmlTags(post.content) : `Loading content...`;
+
+  // --- Data Mapping: User (Me) ---
+  const myName = user?.name || 'Guest';
+  const myAvatar = user?.avatarUrl || '/images/default-profile.png';
+
+  // --- Data Mapping: Comments (Top 3) ---
+  const topThreeComments = useMemo(() => {
+    if (!commentsData) return [];
+    return commentsData.slice(0, 3);
+  }, [commentsData]);
+
+  // --- Data Mapping: Another Post ---
+  const anotherPostImage = anotherPost?.imageUrl || '/images/article-image.png';
 
   return (
     <div className='relative flex min-h-screen flex-col'>
@@ -86,7 +107,7 @@ export default function ArticleDetailPage() {
       {/* Konten utama */}
       <main className='flex-1 md:px-80'>
         <div className='flex flex-col gap-3 px-4 py-6 pb-10 md:gap-4 md:px-0 md:py-12 md:pb-55.75'>
-          {/* status loading / error sederhana */}
+          {/* Status Loading/Error */}
           {isLoading && !post && (
             <p className='text-sm text-neutral-600'>Loading article...</p>
           )}
@@ -118,7 +139,7 @@ export default function ArticleDetailPage() {
               <div className='flex items-center gap-2'>
                 <div className='relative h-8 w-8 md:h-10 md:w-10'>
                   <Image
-                    src='/images/default-profile.png'
+                    src={authorAvatar}
                     alt={`${authorName} profile`}
                     fill
                     sizes='(min-width: 768px) 40px, 32px'
@@ -154,7 +175,7 @@ export default function ArticleDetailPage() {
                   height={20}
                 />
                 <p className='text-xs text-neutral-600 md:text-sm'>
-                  {comments}
+                  {commentsCount}
                 </p>
               </div>
             </div>
@@ -184,22 +205,22 @@ export default function ArticleDetailPage() {
           {/* KOMENTAR */}
           <section className='space-y-6'>
             <h2 className='md:text-display-xs text-xl font-bold'>
-              Comments(5)
+              Comments({commentsCount})
             </h2>
 
-            {/* Current user (Static for now, can be connected to auth later) */}
+            {/* Current user (Dynamic from /users/me) */}
             <div className='flex items-center gap-3'>
               <div className='relative h-10 w-10'>
                 <Image
-                  src='/images/default-profile.png'
-                  alt='John Doe profile'
+                  src={myAvatar}
+                  alt={`${myName} profile`}
                   fill
                   sizes='(min-width: 768px) 40px, 32px'
                   className='rounded-full object-cover'
                 />
               </div>
               <p className='text-xs font-semibold text-neutral-900 md:text-sm'>
-                John Doe
+                {myName}
               </p>
             </div>
 
@@ -227,95 +248,40 @@ export default function ArticleDetailPage() {
               </div>
             </div>
 
-            {/* Comment list */}
+            {/* Comment list (Top 3 Only) */}
             <div className='space-y-3'>
-              {/* Clarissa */}
-              <Separator />
-
-              <div className='flex w-full flex-col gap-2'>
-                <div className='flex items-center gap-2'>
-                  <div className='relative h-10 w-10'>
-                    <Image
-                      src='/images/default-profile.png'
-                      alt='Clarissa profile'
-                      fill
-                      sizes='(min-width: 768px) 40px, 36px'
-                      className='rounded-full object-cover'
-                    />
-                  </div>
-                  <div className='flex-1'>
-                    <div className='flex flex-col'>
-                      <p className='-mb-1 text-sm font-semibold'>Clarissa</p>
-                      <p className='-mt-1 text-xs text-neutral-600 md:text-sm'>
-                        27 Maret 2025
-                      </p>
+              {topThreeComments.map((comment) => (
+                <div key={comment.id} className='flex w-full flex-col gap-2'>
+                  <Separator />
+                  <div className='flex items-center gap-2'>
+                    <div className='relative h-10 w-10'>
+                      <Image
+                        src={
+                          comment.author.avatarUrl ||
+                          '/images/default-profile.png'
+                        }
+                        alt={`${comment.author.name} profile`}
+                        fill
+                        sizes='(min-width: 768px) 40px, 36px'
+                        className='rounded-full object-cover'
+                      />
+                    </div>
+                    <div className='flex-1'>
+                      <div className='flex flex-col'>
+                        <p className='-mb-1 text-sm font-semibold'>
+                          {comment.author.name}
+                        </p>
+                        <p className='-mt-1 text-xs text-neutral-600 md:text-sm'>
+                          {dayjs(comment.createdAt).format('DD MMMM YYYY')}
+                        </p>
+                      </div>
                     </div>
                   </div>
+                  <p className='text-xs text-neutral-900 md:text-sm'>
+                    {comment.content}
+                  </p>
                 </div>
-                <p className='text-xs text-neutral-900 md:text-sm'>
-                  This is super insightful — thanks for sharing!
-                </p>
-              </div>
-
-              <Separator />
-
-              {/* Marco */}
-              <div className='flex w-full flex-col gap-2'>
-                <div className='flex items-center gap-2'>
-                  <div className='relative h-10 w-10'>
-                    <Image
-                      src='/images/default-profile.png'
-                      alt='Marco profile'
-                      fill
-                      sizes='(min-width: 768px) 40px, 36px'
-                      className='rounded-full object-cover'
-                    />
-                  </div>
-                  <div className='flex-1'>
-                    <div className='flex flex-col'>
-                      <p className='-mb-1 text-sm font-semibold'>Marco</p>
-                      <p className='-mt-1 text-xs text-neutral-600 md:text-sm'>
-                        27 Maret 2025
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <p className='text-xs text-neutral-900 md:text-sm'>
-                  Exactly what I needed to read today. Frontend is evolving so
-                  fast!
-                </p>
-              </div>
-
-              <Separator />
-
-              {/* Michael Sailor */}
-              <div className='flex w-full flex-col gap-2'>
-                <div className='flex items-center gap-2'>
-                  <div className='relative h-10 w-10'>
-                    <Image
-                      src='/images/default-profile.png'
-                      alt='Michael Sailor profile'
-                      fill
-                      sizes='(min-width: 768px) 40px, 36px'
-                      className='rounded-full object-cover'
-                    />
-                  </div>
-                  <div className='flex-1'>
-                    <div className='flex flex-col'>
-                      <p className='-mb-1 text-sm font-semibold'>
-                        Michael Sailor
-                      </p>
-                      <p className='-mt-1 text-xs text-neutral-600 md:text-sm'>
-                        27 Maret 2025
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <p className='text-xs text-neutral-900 md:text-sm'>
-                  &quot;Great breakdown! You made complex ideas sound
-                  simple.&quot;
-                </p>
-              </div>
+              ))}
             </div>
 
             <Dialog>
@@ -332,11 +298,11 @@ export default function ArticleDetailPage() {
                 showCloseButton={false}
                 className='flex w-full max-w-86.25 flex-col gap-5 rounded-2xl bg-white p-4 md:max-w-153.25 md:p-6'
               >
-                {/* HEADER DIALOG – statis */}
+                {/* HEADER DIALOG */}
                 <DialogHeader className='flex flex-row items-center justify-between space-y-0'>
                   <DialogTitle asChild>
                     <h2 className='md:text-display-xs text-xl font-bold'>
-                      Comments(5)
+                      Comments({commentsCount})
                     </h2>
                   </DialogTitle>
 
@@ -377,154 +343,43 @@ export default function ArticleDetailPage() {
 
                   {/* Daftar komentar lengkap di dialog */}
                   <div className='space-y-3'>
-                    {/* Clarissa */}
-                    <Separator />
-                    <div className='flex w-full flex-col gap-2'>
-                      <div className='flex items-center gap-2'>
-                        <div className='relative h-10 w-10'>
-                          <Image
-                            src='/images/default-profile.png'
-                            alt='Clarissa profile'
-                            fill
-                            sizes='(min-width: 768px) 40px, 36px'
-                            className='rounded-full object-cover'
-                          />
-                        </div>
-                        <div className='flex-1'>
-                          <div className='flex flex-col'>
-                            <p className='md:text-md -mb-1 text-sm font-semibold'>
-                              Clarissa
-                            </p>
-                            <p className='-mt-1 text-xs text-neutral-600 md:text-sm'>
-                              27 Maret 2025
-                            </p>
+                    {commentsData?.map((comment) => (
+                      <div
+                        key={`dialog-${comment.id}`}
+                        className='flex w-full flex-col gap-2'
+                      >
+                        <Separator />
+                        <div className='flex items-center gap-2'>
+                          <div className='relative h-10 w-10'>
+                            <Image
+                              src={
+                                comment.author.avatarUrl ||
+                                '/images/default-profile.png'
+                              }
+                              alt={`${comment.author.name} profile`}
+                              fill
+                              sizes='(min-width: 768px) 40px, 36px'
+                              className='rounded-full object-cover'
+                            />
+                          </div>
+                          <div className='flex-1'>
+                            <div className='flex flex-col'>
+                              <p className='md:text-md -mb-1 text-sm font-semibold'>
+                                {comment.author.name}
+                              </p>
+                              <p className='-mt-1 text-xs text-neutral-600 md:text-sm'>
+                                {dayjs(comment.createdAt).format(
+                                  'DD MMMM YYYY'
+                                )}
+                              </p>
+                            </div>
                           </div>
                         </div>
+                        <p className='text-xs text-neutral-900 md:text-sm'>
+                          {comment.content}
+                        </p>
                       </div>
-                      <p className='text-xs text-neutral-900 md:text-sm'>
-                        This is super insightful — thanks for sharing!
-                      </p>
-                    </div>
-
-                    {/* Marco */}
-                    <Separator />
-                    <div className='flex w-full flex-col gap-2'>
-                      <div className='flex items-center gap-2'>
-                        <div className='relative h-10 w-10'>
-                          <Image
-                            src='/images/default-profile.png'
-                            alt='Marco profile'
-                            fill
-                            sizes='(min-width: 768px) 40px, 36px'
-                            className='rounded-full object-cover'
-                          />
-                        </div>
-                        <div className='flex-1'>
-                          <div className='flex flex-col'>
-                            <p className='md:text-md -mb-1 text-sm font-semibold'>
-                              Marco
-                            </p>
-                            <p className='-mt-1 text-xs text-neutral-600 md:text-sm'>
-                              27 Maret 2025
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <p className='text-xs text-neutral-900 md:text-sm'>
-                        Exactly what I needed to read today. Frontend is
-                        evolving so fast!
-                      </p>
-                    </div>
-
-                    {/* Michael Sailor */}
-                    <Separator />
-                    <div className='flex w-full flex-col gap-2'>
-                      <div className='flex items-center gap-2'>
-                        <div className='relative h-10 w-10'>
-                          <Image
-                            src='/images/default-profile.png'
-                            alt='Michael Sailor profile'
-                            fill
-                            sizes='(min-width: 768px) 40px, 36px'
-                            className='rounded-full object-cover'
-                          />
-                        </div>
-                        <div className='flex-1'>
-                          <div className='flex flex-col'>
-                            <p className='md:text-md -mb-1 text-sm font-semibold'>
-                              Michael Sailor
-                            </p>
-                            <p className='-mt-1 text-xs text-neutral-600 md:text-sm'>
-                              27 Maret 2025
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <p className='text-xs text-neutral-900 md:text-sm'>
-                        &quot;Great breakdown! You made complex ideas sound
-                        simple.&quot;
-                      </p>
-                    </div>
-
-                    {/* Jessica Jane */}
-                    <Separator />
-                    <div className='flex w-full flex-col gap-2'>
-                      <div className='flex items-center gap-2'>
-                        <div className='relative h-10 w-10'>
-                          <Image
-                            src='/images/default-profile.png'
-                            alt='Jessica Jane profile'
-                            fill
-                            sizes='(min-width: 768px) 40px, 36px'
-                            className='rounded-full object-cover'
-                          />
-                        </div>
-                        <div className='flex-1'>
-                          <div className='flex flex-col'>
-                            <p className='md:text-md -mb-1 text-sm font-semibold'>
-                              Jessica Jane
-                            </p>
-                            <p className='-mt-1 text-xs text-neutral-600 md:text-sm'>
-                              27 Maret 2025
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <p className='text-xs text-neutral-900 md:text-sm'>
-                        As a beginner in frontend, this motivates me a lot.
-                        Appreciate it!
-                      </p>
-                    </div>
-
-                    {/* Alexandra */}
-                    <Separator />
-                    <div className='flex w-full flex-col gap-2'>
-                      <div className='flex items-center gap-2'>
-                        <div className='relative h-10 w-10'>
-                          <Image
-                            src='/images/default-profile.png'
-                            alt='Alexandra profile'
-                            fill
-                            sizes='(min-width: 768px) 40px, 36px'
-                            className='rounded-full object-cover'
-                          />
-                        </div>
-                        <div className='flex-1'>
-                          <div className='flex flex-col'>
-                            <p className='md:text-md -mb-1 text-sm font-semibold'>
-                              Alexandra
-                            </p>
-                            <p className='-mt-1 text-xs text-neutral-600 md:text-sm'>
-                              27 Maret 2025
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <p className='text-xs text-neutral-900 md:text-sm'>
-                        Well-written and straight to the point. Keep posting
-                        content like this!
-                      </p>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </DialogContent>
@@ -534,31 +389,44 @@ export default function ArticleDetailPage() {
           <Separator />
 
           {/* ANOTHER POST */}
-          <section className='space-y-3'>
-            <h2 className='md:text-display-xs text-xl font-bold'>
-              Another Post
-            </h2>
-            <div className='flex flex-row md:gap-6'>
-              <Image
-                src='/images/article-image.png'
-                alt='Article image'
-                width={320}
-                height={180}
-                className='hidden w-full rounded-sm object-cover md:flex md:h-64.5 md:w-85'
-              />
-              <ArticleCard
-                className='md:flex-1'
-                title='5 Reasons to Learn Frontend Development in 2025'
-                tags={['Programming', 'Frontend', 'Coding']}
-                description="Frontend development is more than just building beautiful user interfaces — it's about crafting user experiences that are fast, accessible, and intuitive. As we move into 2025, the demand for skilled frontend developers continues to rise."
-                authorName='John Doe'
-                authorAvatarSrc='/images/default-profile.png'
-                date='27 May 2025'
-                likes={20}
-                comments={20}
-              />
-            </div>
-          </section>
+          {/* Render hanya jika anotherPost berhasil di-load */}
+          {anotherPost && (
+            <section className='space-y-3'>
+              <h2 className='md:text-display-xs text-xl font-bold'>
+                Another Post
+              </h2>
+              <div className='flex flex-row md:gap-6'>
+                <Image
+                  src={anotherPostImage}
+                  alt='Article image'
+                  width={320}
+                  height={180}
+                  className='hidden w-full rounded-sm object-cover md:flex md:h-64.5 md:w-85'
+                />
+                <ArticleCard
+                  className='md:flex-1'
+                  title={anotherPost.title}
+                  tags={
+                    anotherPost.tags?.length > 0
+                      ? anotherPost.tags
+                      : ['Programming', 'Frontend']
+                  }
+                  description={stripHtmlTags(anotherPost.content).substring(
+                    0,
+                    200
+                  )}
+                  authorName={anotherPost.author?.name ?? 'Unknown'}
+                  authorAvatarSrc={
+                    anotherPost.author?.avatarUrl ??
+                    '/images/default-profile.png'
+                  }
+                  date={dayjs(anotherPost.createdAt).format('DD MMM YYYY')}
+                  likes={anotherPost.likes}
+                  comments={anotherPost.comments}
+                />
+              </div>
+            </section>
+          )}
         </div>
       </main>
 

@@ -1,10 +1,11 @@
-export type Author = {
+export interface Author {
   id: number;
   name: string;
   username: string;
-  email: string;
-  avatarUrl?: string | null;
-};
+  headline: string;
+  avatarUrl: string | null;
+  email?: string;
+}
 
 export type Post = {
   id: number;
@@ -24,3 +25,12 @@ export type PaginatedPostsResponse = {
   page: number;
   lastPage: number;
 };
+
+export interface Comment {
+  id: number;
+  content: string;
+  createdAt: string;
+  author: Author;
+}
+
+export type CommentsResponse = Comment[];

@@ -20,12 +20,97 @@ import { Separator } from '@/components/ui/separator';
 
 import {
   useMostLikedPostsQuery,
+  usePostCommentsQuery,
+  usePostLikesQuery,
   useRecommendedPostsQuery,
   useSearchPostsQuery,
 } from '@/features/posts/queries';
 import { stripHtmlTags } from '@/lib/text';
 import { Footer } from '@/shared/components/footer';
 import { Header } from '@/shared/components/header';
+import { Post } from '@/types/post'; // Pastikan import type Post ada
+
+// === SUB-COMPONENTS (Untuk menangani Logic Fetching per Item) ===
+
+// 1. Komponen Wrapper untuk Feed Article (Recommended/Search)
+const FeedItem = ({ post }: { post: Post }) => {
+  // Fetch Realtime Counts
+  const { data: likesData } = usePostLikesQuery(post.id);
+  const { data: commentsData } = usePostCommentsQuery(post.id);
+
+  // Prioritaskan data hasil fetch array length, fallback ke data awal post
+  const realLikes = likesData?.length ?? post.likes ?? 0;
+  const realComments = commentsData?.length ?? post.comments ?? 0;
+
+  return (
+    <Fragment>
+      <Link
+        href={`/detail?id=${post.id}`}
+        className='flex flex-col gap-3 md:flex-row md:gap-6'
+      >
+        <Image
+          src={
+            post.imageUrl && post.imageUrl.length > 0
+              ? post.imageUrl
+              : '/images/article-image.png'
+          }
+          alt={post.title}
+          width={320}
+          height={180}
+          className='hidden h-64.5 w-85 rounded-sm object-cover md:block'
+        />
+        <ArticleCard
+          className='md:flex-1'
+          title={post.title}
+          tags={post.tags}
+          description={stripHtmlTags(post.content)}
+          authorName={post.author?.name ?? 'Unknown Author'}
+          authorAvatarSrc={
+            post.author?.avatarUrl || '/images/default-profile.png'
+          }
+          date={dayjs(post.createdAt).format('DD MMM YYYY')}
+          // Pass data real-time ke UI
+          likes={realLikes}
+          comments={realComments}
+        />
+      </Link>
+      <Separator />
+    </Fragment>
+  );
+};
+
+// 2. Komponen Wrapper untuk Most Liked Sidebar
+const MostLikedItemWrapper = ({
+  post,
+  isLast,
+}: {
+  post: Post;
+  isLast: boolean;
+}) => {
+  // Fetch Realtime Counts
+  const { data: likesData } = usePostLikesQuery(post.id);
+  const { data: commentsData } = usePostCommentsQuery(post.id);
+
+  const realLikes = likesData?.length ?? post.likes ?? 0;
+  const realComments = commentsData?.length ?? post.comments ?? 0;
+
+  return (
+    <Fragment>
+      <Link href={`/detail?id=${post.id}`} className='block'>
+        <MostLikedCard
+          title={post.title}
+          description={stripHtmlTags(post.content)}
+          // Pass data real-time ke UI
+          likes={realLikes}
+          comments={realComments}
+        />
+      </Link>
+      {!isLast && <Separator />}
+    </Fragment>
+  );
+};
+
+// === MAIN PAGE COMPONENT ===
 
 export default function Home() {
   // State Halaman Home
@@ -101,7 +186,6 @@ export default function Home() {
       : [1, 2, 3];
 
   return (
-    // PERBAIKAN 1: Tambahkan 'flex flex-col' agar children bisa expand
     <div className='relative flex min-h-screen flex-col'>
       {/* Reusable Header */}
       <Header
@@ -111,21 +195,9 @@ export default function Home() {
         onLogoClick={clearSearch}
       />
 
-      {/* 
-         PERBAIKAN 2: 
-         - Hapus min-h-[calc(...)] yang manual.
-         - Gunakan 'flex-1' agar main mengisi sisa ruang antara Header dan Footer.
-         - Tambahkan 'flex flex-col' agar konten di dalamnya bisa di-center.
-      */}
       <main className='flex flex-1 flex-col md:px-30'>
         {/* KONDISI 1: Search Result Kosong */}
         {isSearching && !isSearchLoading && dataToRender?.data.length === 0 ? (
-          /* 
-             PERBAIKAN 3:
-             - Hapus 'py-20' (ini biang kerok yang membuatnya tidak center).
-             - Gunakan 'flex-1' agar div ini mengisi penuh area <main>.
-             - Gunakan 'justify-center' untuk centering vertikal otomatis.
-          */
           <div className='flex flex-1 flex-col items-center justify-center gap-6 p-4'>
             <div className='relative h-40 w-40'>
               <Image
@@ -165,42 +237,12 @@ export default function Home() {
                 <p className='text-sm text-red-500'>Failed to load posts.</p>
               )}
 
+              {/* MAPPING DATA MENGGUNAKAN SUB-COMPONENT */}
               {dataToRender?.data.map((post) => (
-                <Fragment key={post.id}>
-                  <Link
-                    href={`/detail?id=${post.id}`}
-                    className='flex flex-col gap-3 md:flex-row md:gap-6'
-                  >
-                    <Image
-                      src={
-                        post.imageUrl && post.imageUrl.length > 0
-                          ? post.imageUrl
-                          : '/images/article-image.png'
-                      }
-                      alt={post.title}
-                      width={320}
-                      height={180}
-                      className='hidden h-64.5 w-85 rounded-sm object-cover md:block'
-                    />
-                    <ArticleCard
-                      className='md:flex-1'
-                      title={post.title}
-                      tags={post.tags}
-                      description={stripHtmlTags(post.content)}
-                      authorName={post.author?.name ?? 'Unknown Author'}
-                      authorAvatarSrc={
-                        post.author?.avatarUrl || '/images/default-profile.png'
-                      }
-                      date={dayjs(post.createdAt).format('DD MMM YYYY')}
-                      likes={post.likes}
-                      comments={post.comments}
-                    />
-                  </Link>
-                  <Separator />
-                </Fragment>
+                <FeedItem key={post.id} post={post} />
               ))}
 
-              {/* Pagination (Logic sama, tidak diubah) */}
+              {/* Pagination */}
               <Pagination>
                 <PaginationContent className='mx-auto h-12 w-full max-w-90.25 items-center justify-between px-2'>
                   <PaginationItem>
@@ -294,20 +336,13 @@ export default function Home() {
                     </p>
                   )}
 
+                  {/* MAPPING DATA MENGGUNAKAN SUB-COMPONENT */}
                   {mostLikedPosts?.data.map((post, index) => (
-                    <Fragment key={post.id}>
-                      <Link href={`/detail?id=${post.id}`} className='block'>
-                        <MostLikedCard
-                          title={post.title}
-                          description={stripHtmlTags(post.content)}
-                          likes={post.likes}
-                          comments={post.comments}
-                        />
-                      </Link>
-                      {index !== mostLikedPosts.data.length - 1 && (
-                        <Separator />
-                      )}
-                    </Fragment>
+                    <MostLikedItemWrapper
+                      key={post.id}
+                      post={post}
+                      isLast={index === mostLikedPosts.data.length - 1}
+                    />
                   ))}
                 </div>
               </>
@@ -316,7 +351,6 @@ export default function Home() {
         )}
       </main>
 
-      {/* Reusable Footer */}
       <Footer />
     </div>
   );

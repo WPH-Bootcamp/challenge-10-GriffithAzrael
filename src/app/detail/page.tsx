@@ -23,6 +23,7 @@ import { useAuthUserQuery } from '@/features/auth/queries';
 import {
   usePostDetailQuery,
   usePostCommentsQuery,
+  usePostLikesQuery,
 } from '@/features/posts/queries';
 import { stripHtmlTags } from '@/lib/text';
 import { Footer } from '@/shared/components/footer';
@@ -42,9 +43,9 @@ export default function ArticleDetailPage() {
 
   const { data: user } = useAuthUserQuery();
   const { data: commentsData } = usePostCommentsQuery(postId);
+  const { data: likesData } = usePostLikesQuery(postId);
 
   // 3. Logic "Another Post" (Simulasi mengambil post lain, misal id+1)
-  // Jika postId ada, kita coba ambil postId + 1, jika tidak default ke 1
   const anotherPostId = postId ? postId + 1 : 1;
   const { data: anotherPost } = usePostDetailQuery(anotherPostId);
 
@@ -65,17 +66,19 @@ export default function ArticleDetailPage() {
   const tags =
     post?.tags && post.tags.length > 0
       ? post.tags
-      : ['Programming', 'Frontend', 'Coding']; // Default fallback
+      : ['Programming', 'Frontend', 'Coding'];
 
   const authorName = post?.author?.name ?? 'Unknown Author';
   const authorAvatar = post?.author?.avatarUrl || '/images/default-profile.png';
   const createdAtText = post
     ? dayjs(post.createdAt).format('DD MMM YYYY')
     : '-';
-  const likes = post?.likes ?? 0;
 
-  // Total komentar: Prioritas dari detail post (jumlah), fallback ke panjang array comments
-  const commentsCount = post?.comments ?? commentsData?.length ?? 0;
+  // === FIX: Prioritaskan commentsData.length ===
+  // Ini memastikan jika list komentar sudah di-load (misal ada 2 item),
+  // angka yang muncul adalah 2, bukan 0 dari post.comments.
+  const commentsCount = commentsData?.length ?? post?.comments ?? 0;
+  const likesCount = likesData?.length ?? post?.likes ?? 0;
 
   const imageSrc = post?.imageUrl || '/images/article-image.png';
 
@@ -165,7 +168,9 @@ export default function ArticleDetailPage() {
                   width={20}
                   height={20}
                 />
-                <p className='text-xs text-neutral-600 md:text-sm'>{likes}</p>
+                <p className='text-xs text-neutral-600 md:text-sm'>
+                  {likesCount}
+                </p>
               </div>
               <div className='flex items-center gap-1.5'>
                 <Image
@@ -208,7 +213,7 @@ export default function ArticleDetailPage() {
               Comments({commentsCount})
             </h2>
 
-            {/* Current user (Dynamic from /users/me) */}
+            {/* Current user */}
             <div className='flex items-center gap-3'>
               <div className='relative h-10 w-10'>
                 <Image
@@ -237,7 +242,6 @@ export default function ArticleDetailPage() {
                 />
               </div>
 
-              {/* wrapper untuk menggeser tombol ke kanan di desktop */}
               <div className='mt-3 flex justify-end'>
                 <button
                   type='button'
@@ -298,7 +302,6 @@ export default function ArticleDetailPage() {
                 showCloseButton={false}
                 className='flex w-full max-w-86.25 flex-col gap-5 rounded-2xl bg-white p-4 md:max-w-153.25 md:p-6'
               >
-                {/* HEADER DIALOG */}
                 <DialogHeader className='flex flex-row items-center justify-between space-y-0'>
                   <DialogTitle asChild>
                     <h2 className='md:text-display-xs text-xl font-bold'>
@@ -317,7 +320,6 @@ export default function ArticleDetailPage() {
                   </DialogClose>
                 </DialogHeader>
 
-                {/* AREA SCROLLABLE: input + list komentar */}
                 <div className='no-scrollbar -mx-4 max-h-[calc(100vh-194px)] space-y-2 overflow-y-auto px-4 md:-mx-6 md:max-h-[calc(100vh-122px)] md:px-6'>
                   {/* Comment input di dialog */}
                   <div className='space-y-2'>
@@ -389,7 +391,6 @@ export default function ArticleDetailPage() {
           <Separator />
 
           {/* ANOTHER POST */}
-          {/* Render hanya jika anotherPost berhasil di-load */}
           {anotherPost && (
             <section className='space-y-3'>
               <h2 className='md:text-display-xs text-xl font-bold'>

@@ -1,7 +1,7 @@
 import axios from 'axios'; // Import axios langsung untuk local route
 
 import { fetchAPI } from '@/lib/api'; // Gunakan helper yang sudah Anda buat
-import type { PaginatedPostsResponse, Post, Comment } from '@/types/post';
+import type { User, PaginatedPostsResponse, Post, Comment } from '@/types/post';
 
 export type ListParams = {
   limit?: number;
@@ -59,6 +59,10 @@ export function getSearchPosts(params: SearchParams) {
 
 export function getPostById(id: number | string) {
   return fetchAPI<Post>(`/posts/${id}`);
+}
+
+export function getPostLikes(id: number | string) {
+  return fetchAPI<User[]>(`/posts/${id}/likes`);
 }
 
 export function getPostComments(id: number | string) {

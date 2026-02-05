@@ -2,13 +2,15 @@
 
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 
-import type { PaginatedPostsResponse, Post, Comment } from '@/types/post';
+// Tambahkan type User untuk response Likes
+import type { PaginatedPostsResponse, Post, Comment, User } from '@/types/post';
 
 import {
   getMostLikedPosts,
   getPostById,
   getRecommendedPosts,
   getPostComments,
+  getPostLikes, // IMPORT BARU
   getSearchPosts,
   SearchParams,
 } from './api';
@@ -25,12 +27,12 @@ export const postsKeys = {
   mostLiked: (params: ListParams) =>
     [...postsKeys.all, 'most-liked', params] as const,
   post: (id: number | string) => [...postsKeys.all, 'detail', id] as const,
-  // Key baru untuk search
   search: (params: SearchParams) =>
     [...postsKeys.all, 'search', params] as const,
-  // Key baru untuk comments
   comments: (id: number | string) =>
     [...postsKeys.all, 'comments', id] as const,
+  // KEY BARU UNTUK LIKES
+  likes: (id: number | string) => [...postsKeys.all, 'likes', id] as const,
 };
 
 export function useRecommendedPostsQuery(params: ListParams) {
@@ -57,11 +59,12 @@ export function useSearchPostsQuery(
     queryKey: postsKeys.search(params),
     queryFn: () => getSearchPosts(params),
     placeholderData: keepPreviousData,
-    enabled: enabled, // Agar query tidak jalan otomatis kalau query string kosong
+    enabled: enabled,
   });
 }
 
-export function usePostDetailQuery(id?: number) {
+// Update tipe ID agar support string juga (dari URL)
+export function usePostDetailQuery(id?: number | string) {
   return useQuery<Post, Error>({
     queryKey: postsKeys.post(id ?? 'pending'),
     queryFn: () => getPostById(id!),
@@ -69,11 +72,20 @@ export function usePostDetailQuery(id?: number) {
   });
 }
 
-// Hook Baru: Get Comments
-export function usePostCommentsQuery(id?: number) {
+// Update tipe ID
+export function usePostCommentsQuery(id?: number | string) {
   return useQuery<Comment[], Error>({
     queryKey: postsKeys.comments(id ?? 'pending'),
     queryFn: () => getPostComments(id!),
+    enabled: id != null,
+  });
+}
+
+// HOOK BARU UNTUK LIKES
+export function usePostLikesQuery(id?: number | string) {
+  return useQuery<User[], Error>({
+    queryKey: postsKeys.likes(id ?? 'pending'),
+    queryFn: () => getPostLikes(id!),
     enabled: id != null,
   });
 }

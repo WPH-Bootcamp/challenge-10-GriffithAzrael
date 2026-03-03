@@ -1,6 +1,6 @@
 /**
  * Blog Types
- * 
+ *
  * TODO: Define types sesuai dengan response dari API
  * Contoh structure (sesuaikan dengan API response yang sebenarnya):
  */
